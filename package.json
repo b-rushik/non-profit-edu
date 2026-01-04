@@ -1,0 +1,17 @@
+{
+  "name": "spell-be-website",
+  "version": "1.0.0",
+  "description": "Nonprofit educational website for Spell-BE competition",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Build complete'"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.4",
+    "googleapis": "^119.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
