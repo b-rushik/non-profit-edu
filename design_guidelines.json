@@ -1,0 +1,148 @@
+{
+  "identity": {
+    "name": "E1 - The Anti-AI Designer",
+    "tone": "Vibrant, Trustworthy, Educational, Energetic",
+    "mission": "Create a non-profit portal that feels alive and engaging, not like a boring government form."
+  },
+  "typography": {
+    "headings": {
+      "font_family": "Nunito, sans-serif",
+      "weights": ["700", "800"],
+      "usage": "Use for all section titles, hero text, and card headers. Tight tracking."
+    },
+    "body": {
+      "font_family": "Outfit, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Use for all paragraph text, form labels, and navigation."
+    },
+    "installation": "Import from Google Fonts: @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Outfit:wght@400;500;600&display=swap');"
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Violet Wisdom",
+        "hex": "#7c3aed",
+        "tailwind": "violet-600",
+        "usage": "Primary buttons, key highlights, active states."
+      },
+      "secondary": {
+        "name": "Amber Energy",
+        "hex": "#fbbf24",
+        "tailwind": "amber-400",
+        "usage": "Accents, 'New' badges, decorative blobs."
+      },
+      "accent": {
+        "name": "Teal Growth",
+        "hex": "#14b8a6",
+        "tailwind": "teal-500",
+        "usage": "Success states, secondary buttons, icons."
+      },
+      "background": {
+        "name": "Soft Slate",
+        "hex": "#f8fafc",
+        "tailwind": "slate-50",
+        "usage": "Main page background."
+      },
+      "surface": {
+        "name": "Pure White",
+        "hex": "#ffffff",
+        "tailwind": "white",
+        "usage": "Cards, form containers, sticky headers."
+      },
+      "text": {
+        "primary": "#0f172a",
+        "secondary": "#475569",
+        "muted": "#94a3b8"
+      }
+    },
+    "gradients": {
+      "hero": "bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600",
+      "card_hover": "hover:bg-gradient-to-br hover:from-white hover:to-slate-50"
+    }
+  },
+  "layout_strategies": {
+    "spacing": {
+      "container_padding": "px-4 md:px-8 lg:px-12",
+      "section_gap": "py-16 md:py-24",
+      "element_gap": "gap-6 md:gap-8"
+    },
+    "grids": {
+      "bento_marketing": "grid grid-cols-1 md:grid-cols-3 gap-6",
+      "form_layout": "max-w-md mx-auto space-y-6"
+    },
+    "containers": {
+      "card_style": "bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300",
+      "glass_header": "bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-50"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-violet-600 text-white hover:bg-violet-700 rounded-full px-8 py-3 font-bold shadow-lg shadow-violet-200 transition-transform hover:-translate-y-0.5",
+      "secondary": "bg-white text-violet-600 border-2 border-violet-100 hover:border-violet-200 hover:bg-violet-50 rounded-full px-8 py-3 font-bold transition-colors"
+    },
+    "inputs": {
+      "style": "h-12 rounded-xl border-slate-200 focus:border-violet-500 focus:ring-violet-500/20 bg-slate-50 focus:bg-white transition-all"
+    },
+    "cards": {
+      "event_card": "group relative overflow-hidden rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500"
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_main": {
+        "url": "https://images.unsplash.com/photo-1758270705657-f28eec1a5694?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwyfHxkaXZlcnNlJTIwc3R1ZGVudHMlMjBoYXBweSUyMGxlYXJuaW5nfGVufDB8fHx8MTc2ODAyMDEwNXww&ixlib=rb-4.1.0&q=85",
+        "alt": "Diverse happy students learning together",
+        "usage": "Home page hero section background or side image"
+      },
+      "spell_bee_event": {
+        "url": "https://images.pexels.com/photos/12497065/pexels-photo-12497065.jpeg",
+        "alt": "Student speaking at microphone",
+        "usage": "Spell-Bee event page hero"
+      },
+      "volunteer_hero": {
+        "url": "https://images.pexels.com/photos/7692559/pexels-photo-7692559.jpeg",
+        "alt": "Teacher helping student",
+        "usage": "Volunteer registration page"
+      },
+      "qr_code": {
+        "url": "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SupportNonProfit",
+        "alt": "Donation QR Code",
+        "usage": "Footer or Donation section"
+      }
+    },
+    "icons": {
+      "library": "lucide-react",
+      "preferred": ["GraduationCap", "Heart", "Calendar", "MapPin", "Users", "Trophy", "Sparkles"]
+    }
+  },
+  "motion": {
+    "page_transition": "initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}",
+    "hover_lift": "hover:-translate-y-1 transition-transform duration-300",
+    "button_tap": "active:scale-95"
+  },
+  "accessibility": {
+    "contrast_check": "Ensure Violet-600 text is not used on dark backgrounds. Use White text on Violet-600 backgrounds.",
+    "focus_states": "focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+    "labels": "All form inputs must have visible labels or aria-labels."
+  },
+  "instructions_to_main_agent": [
+    "1. SETUP: Install 'lucide-react' and 'framer-motion' immediately.",
+    "2. FONTS: Add the Google Fonts import to 'index.css' at the very top.",
+    "3. THEME: Update 'tailwind.config.js' to include the custom colors (Violet, Amber, Teal) and fonts (Nunito, Outfit).",
+    "4. LAYOUT: Build the Home Page first. Use the 'hero_main' image. Make it vibrant.",
+    "5. COMPONENTS: Use Shadcn for the 'Contact Form' and 'Registration Forms' but style them with the 'inputs.style' defined above.",
+    "6. ADMIN: Create a simple 'AdminLogin' and 'AdminDashboard' page. The dashboard should allow editing the 'Latest Event' text (mocked state).",
+    "7. EXCEL: Mock the Excel export functionality. Just console.log the data and show a success toast.",
+    "8. NAVIGATION: Create a responsive navbar with links: Home, Spell-Bee, Volunteer, Contact.",
+    "9. FOOTER: Include the Donation QR code in the footer.",
+    "10. DATA-TESTID: Add 'data-testid' to all buttons, inputs, and links."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Do not use generic centered layouts.",
+    "Create depth through layered design elements.",
+    "Use glass-morphism effects for the navbar.",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Use 'sonner' for toasts."
+  ]
+}
