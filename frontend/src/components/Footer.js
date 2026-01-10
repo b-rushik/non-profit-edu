@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="font-nunito font-bold text-xl mb-4">EduCompete</h3>
+            <h3 className="font-nunito font-bold text-xl mb-4">ubuntu educational society</h3>
             <p className="text-slate-400 font-outfit">
               Empowering students through educational competitions and fostering a love for learning.
             </p>
@@ -53,7 +53,7 @@ const Footer = () => {
         <div className="border-t border-slate-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-400 font-outfit text-sm">
-              © 2025 EduCompete. All rights reserved.
+              © 2025 ubuntu educational society. All rights reserved.
             </p>
             <div className="flex items-center gap-4 text-slate-400 text-sm font-outfit">
               <a href="mailto:info@educompete.org" className="flex items-center gap-2 hover:text-white transition-colors">

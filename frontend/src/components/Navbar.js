@@ -21,10 +21,8 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center gap-2 group" data-testid="nav-logo">
-            <div className="bg-gradient-to-br from-violet-600 to-purple-600 p-2 rounded-xl group-hover:scale-110 transition-transform">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <span className="font-nunito font-bold text-xl text-slate-900">EduCompete</span>
+            <img src="/logo.png" alt="ubuntu educational society logo" className="w-8 h-8 object-contain rounded-md" />
+            <span className="font-nunito font-bold text-xl text-slate-900">ubuntu educational society</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
