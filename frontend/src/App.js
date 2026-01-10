@@ -10,7 +10,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import { Toaster } from './components/ui/sonner';
+import { Toaster } from './components/ui/sonner.jsx';
 import './App.css';
 
 function App() {
