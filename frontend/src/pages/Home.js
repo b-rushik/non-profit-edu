@@ -18,7 +18,24 @@ const Home = () => {
           axios.get(`${BACKEND_URL}/api/registrations/count`)
         ]);
         setEventData(eventRes.data);
-        setRegistrationCount(countRes.data);
+        // Apply optimistic local increment if a recent submission was made via Netlify
+        let counts = countRes.data;
+        try {
+          const recent = localStorage.getItem('recentSubmission');
+          if (recent) {
+            const parsed = JSON.parse(recent);
+            if (parsed?.type === 'students') {
+              counts = { ...counts, students: (counts.students || 0) + 1 };
+            } else if (parsed?.type === 'volunteers') {
+              counts = { ...counts, volunteers: (counts.volunteers || 0) + 1 };
+            }
+            localStorage.removeItem('recentSubmission');
+          }
+        } catch (e) {
+          // ignore localStorage errors
+        }
+
+        setRegistrationCount(counts);
       } catch (error) {
         console.error('Error fetching data:', error);
       }

@@ -65,6 +65,11 @@ const StudentRegistration = () => {
       // Submit to Netlify Forms (required for Netlify to collect submissions)
       await submitToNetlify('student-registration', payload);
 
+      // Mark optimistic local submission so the home page can reflect updated counts
+      try {
+        localStorage.setItem('recentSubmission', JSON.stringify({ type: 'students' }));
+      } catch (e) {}
+
       // Try to forward to backend, but do not fail the user flow if it errors (Netlify already captured it)
       if (BACKEND_URL) {
         try {

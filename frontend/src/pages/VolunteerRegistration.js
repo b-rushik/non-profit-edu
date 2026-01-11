@@ -53,6 +53,11 @@ const VolunteerRegistration = () => {
       const payload = { ...formData, phone: phoneDigits };
       await submitToNetlify('volunteer-registration', payload);
 
+      // Mark optimistic local submission so the home page can reflect updated counts
+      try {
+        localStorage.setItem('recentSubmission', JSON.stringify({ type: 'volunteers' }));
+      } catch (e) {}
+
       if (BACKEND_URL) {
         try {
           await axios.post(`${BACKEND_URL}/api/volunteers/register`, payload);
