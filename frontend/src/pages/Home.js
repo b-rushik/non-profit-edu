@@ -88,8 +88,8 @@ const Home = () => {
               className="hidden md:block"
             >
               <img
-                src="https://images.unsplash.com/photo-1758270705657-f28eec1a5694?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwyfHxkaXZlcnNlJTIwc3R1ZGVudHMlMjBoYXBweSUyMGxlYXJuaW5nfGVufDB8fHx8MTc2ODAyMDEwNXww&ixlib=rb-4.1.0&q=85"
-                alt="Happy students learning"
+                src={`${process.env.PUBLIC_URL}/home-page.jpeg`}
+                alt="Home page"
                 className="rounded-3xl shadow-2xl"
               />
             </motion.div>
