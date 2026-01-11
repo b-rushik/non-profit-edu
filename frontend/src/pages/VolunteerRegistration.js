@@ -46,20 +46,27 @@ const VolunteerRegistration = () => {
       await submitToNetlify('volunteer-registration', formData);
 
       if (BACKEND_URL) {
-        await axios.post(`${BACKEND_URL}/api/volunteers/register`, formData);
+        try {
+          await axios.post(`${BACKEND_URL}/api/volunteers/register`, formData);
+        } catch (backendErr) {
+          console.error('Backend forwarding failed:', backendErr.response?.status, backendErr.response?.data || backendErr.message);
+          // continue — user already submitted via Netlify
+        }
       }
 
       toast.success('Thank you for volunteering! We will contact you soon.');
       setTimeout(() => navigate('/thank-you'), 1200);
     } catch (error) {
-      console.error(error);
-      if (error.response?.status === 400) {
-        toast.error(error.response.data.detail || 'Registration failed');
-        if (error.response.data.detail === 'Registration limit reached') {
+      console.error('Volunteer registration error:', error);
+      const axiosResp = error.response;
+      const message = axiosResp?.data?.detail || axiosResp?.data?.message || error.message || 'Something went wrong. Please try again.';
+      if (axiosResp?.status === 400) {
+        toast.error(message);
+        if (message === 'Registration limit reached') {
           setLimitReached(true);
         }
       } else {
-        toast.error('Something went wrong. Please try again.');
+        toast.error(message);
       }
     } finally {
       setLoading(false);

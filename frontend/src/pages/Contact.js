@@ -31,15 +31,21 @@ const Contact = () => {
       await submitToNetlify('contact-form', formData);
 
       if (BACKEND_URL) {
-        await axios.post(`${BACKEND_URL}/api/contact`, formData);
+        try {
+          await axios.post(`${BACKEND_URL}/api/contact`, formData);
+        } catch (backendErr) {
+          console.error('Backend forwarding failed:', backendErr.response?.status, backendErr.response?.data || backendErr.message);
+        }
       }
 
       toast.success('Message sent! We will get back to you soon.');
       setFormData({ name: '', email: '', message: '' });
       setTimeout(() => window.location.href = '/thank-you', 800);
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to send message. Please try again.');
+      console.error('Contact submission error:', error);
+      const axiosResp = error.response;
+      const message = axiosResp?.data?.detail || axiosResp?.data?.message || error.message || 'Failed to send message. Please try again.';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
