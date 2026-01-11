@@ -1,17 +1,15 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from pydantic import BaseModel
 import uuid
 from datetime import datetime, timezone
-# openpyxl import will be conditional when USE_EXCEL is enabled
-# from openpyxl import Workbook, load_workbook
 import hashlib
+import json
+import re
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,53 +17,44 @@ load_dotenv(ROOT_DIR / '.env')
 # Excel storage is optional. Set USE_EXCEL=true locally to enable Excel files.
 USE_EXCEL = os.environ.get('USE_EXCEL', 'false').lower() == 'true'
 
-if not USE_EXCEL:
-    # Minimal no-op implementations for deployments where Netlify Forms will be used
-    def get_row_count(filepath):
-        return 0
-
-    def add_to_excel(filepath, data):
-        logging.info('Submission received (Excel disabled): %s', data)
-
-    def read_event_file(filepath):
-        return None
-
-    def write_event_file(filepath, event_dict):
-        logging.info('Event update (Excel disabled): %s', event_dict)
-
-# NOTE: Switching to Excel-based storage for local dev; MongoDB not required
-
-
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
-security = HTTPBearer()
 
 EXCEL_DIR = ROOT_DIR / 'data'
 EXCEL_DIR.mkdir(exist_ok=True)
 STUDENTS_FILE = EXCEL_DIR / 'student_registrations.xlsx'
 VOLUNTEERS_FILE = EXCEL_DIR / 'volunteer_registrations.xlsx'
 CONTACTS_FILE = EXCEL_DIR / 'contact_messages.xlsx'
+COUNTS_FILE = EXCEL_DIR / 'counts.json'
 MAX_REGISTRATIONS = 1000
 ADMIN_PASSWORD_HASH = hashlib.sha256("admin123".encode()).hexdigest()
 
-def init_excel_file(filepath, headers):
-    if not filepath.exists():
-        wb = Workbook()
-        ws = wb.active
-        ws.append(headers)
-        wb.save(filepath)
+if USE_EXCEL:
+    try:
+        from openpyxl import Workbook, load_workbook
+    except ImportError:
+        raise ImportError("openpyxl is required when USE_EXCEL=true; install it in backend/requirements.txt")
 
-init_excel_file(STUDENTS_FILE, ['ID', 'Name', 'Age/Grade', 'School', 'Email', 'Phone', 'Timestamp'])
-init_excel_file(VOLUNTEERS_FILE, ['ID', 'Name', 'Email', 'Phone', 'School/Organization', 'Timestamp'])
-init_excel_file(CONTACTS_FILE, ['ID', 'Name', 'Email', 'Message', 'Timestamp'])
+    def init_excel_file(filepath, headers):
+        if not filepath.exists():
+            wb = Workbook()
+            ws = wb.active
+            ws.append(headers)
+            wb.save(filepath)
 
-# Event content stored in Excel for local setups
-EVENT_FILE = EXCEL_DIR / 'event_content.xlsx'
-init_excel_file(EVENT_FILE, ['title', 'description', 'date', 'location'])
+    init_excel_file(STUDENTS_FILE, ['ID', 'Name', 'Age', 'School', 'Email', 'Phone', 'Timestamp'])
+    init_excel_file(VOLUNTEERS_FILE, ['ID', 'Name', 'Email', 'Phone', 'School/Organization', 'Timestamp'])
+    init_excel_file(CONTACTS_FILE, ['ID', 'Name', 'Email', 'Message', 'Timestamp'])
+    init_excel_file(EVENT_FILE if (EVENT_FILE := EXCEL_DIR / 'event_content.xlsx') else EVENT_FILE, ['title', 'description', 'date', 'location'])
+else:
+    # Ensure counts.json exists for Netlify/production mode (no Excel persistence)
+    if not COUNTS_FILE.exists():
+        with open(COUNTS_FILE, 'w') as f:
+            json.dump({'students': 0, 'volunteers': 0}, f)
 
 class StudentRegistration(BaseModel):
     name: str
-    age_grade: str
+    age: str
     school: str
     email: str
     phone: str
@@ -100,7 +89,25 @@ class RegistrationCount(BaseModel):
     students_limit_reached: bool
     volunteers_limit_reached: bool
 
+# Helpers for JSON-backed counts (used when USE_EXCEL is false)
+def _ensure_counts():
+    if not COUNTS_FILE.exists():
+        counts = {'students': 0, 'volunteers': 0}
+        with open(COUNTS_FILE, 'w') as f:
+            json.dump(counts, f)
+        return counts
+    with open(COUNTS_FILE, 'r') as f:
+        return json.load(f)
+
+def _save_counts(counts):
+    with open(COUNTS_FILE, 'w') as f:
+        json.dump(counts, f)
+
 def get_row_count(filepath):
+    if not USE_EXCEL:
+        counts = _ensure_counts()
+        return counts.get('students', 0) if filepath == STUDENTS_FILE else counts.get('volunteers', 0)
+
     if not filepath.exists():
         return 0
     wb = load_workbook(filepath, read_only=True)
@@ -110,6 +117,17 @@ def get_row_count(filepath):
     return max(0, count)
 
 def add_to_excel(filepath, data):
+    # When Excel is disabled, update the simple JSON counts and log the submission
+    if not USE_EXCEL:
+        counts = _ensure_counts()
+        if filepath == STUDENTS_FILE:
+            counts['students'] = counts.get('students', 0) + 1
+        elif filepath == VOLUNTEERS_FILE:
+            counts['volunteers'] = counts.get('volunteers', 0) + 1
+        _save_counts(counts)
+        logging.info('Submission received (Excel disabled): %s', data)
+        return
+
     wb = load_workbook(filepath)
     ws = wb.active
     ws.append(data)
@@ -157,46 +175,56 @@ async def get_registration_count():
 
 @api_router.post("/students/register")
 async def register_student(student: StudentRegistration):
-    count = get_row_count(STUDENTS_FILE)
-    if count >= MAX_REGISTRATIONS:
+    students_count = get_row_count(STUDENTS_FILE)
+    if students_count >= MAX_REGISTRATIONS:
         raise HTTPException(status_code=400, detail="Registration limit reached")
-    
+
     if not student.consent:
         raise HTTPException(status_code=400, detail="Consent is required")
-    
+
+    # Phone validation: strip non-digits and enforce max 10 digits
+    phone_digits = re.sub(r'\D', '', student.phone or '')
+    if len(phone_digits) > 10:
+        raise HTTPException(status_code=400, detail="Phone number must be at most 10 digits")
+
     student_id = str(uuid.uuid4())[:8]
     timestamp = datetime.now(timezone.utc).isoformat()
-    
+
     add_to_excel(STUDENTS_FILE, [
         student_id,
         student.name,
-        student.age_grade,
+        student.age,
         student.school,
         student.email,
-        student.phone,
+        phone_digits,
         timestamp
     ])
-    
+
     return {"message": "Registration successful", "id": student_id}
 
 @api_router.post("/volunteers/register")
 async def register_volunteer(volunteer: VolunteerRegistration):
-    count = get_row_count(VOLUNTEERS_FILE)
-    if count >= MAX_REGISTRATIONS:
+    volunteers_count = get_row_count(VOLUNTEERS_FILE)
+    if volunteers_count >= MAX_REGISTRATIONS:
         raise HTTPException(status_code=400, detail="Registration limit reached")
-    
+
+    # Phone validation: strip non-digits and enforce max 10 digits
+    phone_digits = re.sub(r'\D', '', volunteer.phone or '')
+    if len(phone_digits) > 10:
+        raise HTTPException(status_code=400, detail="Phone number must be at most 10 digits")
+
     volunteer_id = str(uuid.uuid4())[:8]
     timestamp = datetime.now(timezone.utc).isoformat()
-    
+
     add_to_excel(VOLUNTEERS_FILE, [
         volunteer_id,
         volunteer.name,
         volunteer.email,
-        volunteer.phone,
+        phone_digits,
         volunteer.organization,
         timestamp
     ])
-    
+
     return {"message": "Registration successful", "id": volunteer_id}
 
 @api_router.post("/contact")
@@ -257,4 +285,3 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
