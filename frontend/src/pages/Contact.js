@@ -9,7 +9,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Button } from '../components/ui/button';
 import { submitToNetlify } from '../lib/utils';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_API_URL;
 
 const Contact = () => {
   const [loading, setLoading] = useState(false);

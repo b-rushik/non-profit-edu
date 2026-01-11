@@ -4,7 +4,7 @@ import { Calendar, MapPin, Users, Award, BookOpen, ArrowRight } from 'lucide-rea
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_API_URL;
 
 const SpellBee = () => {
   const [eventData, setEventData] = useState(null);

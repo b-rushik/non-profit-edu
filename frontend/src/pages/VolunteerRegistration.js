@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
 import { submitToNetlify } from '../lib/utils';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_API_URL;
 
 const VolunteerRegistration = () => {
   const navigate = useNavigate();

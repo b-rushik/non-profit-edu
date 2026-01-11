@@ -4,7 +4,7 @@ import { GraduationCap, Users, Trophy, Calendar, ArrowRight, Sparkles } from 'lu
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_API_URL;
 
 const Home = () => {
   const [eventData, setEventData] = useState(null);
