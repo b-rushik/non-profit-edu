@@ -88,7 +88,7 @@ const Home = () => {
               className="hidden md:block"
             >
               <img
-                src={`${process.env.PUBLIC_URL}/home-page.jpeg`}
+                src={`${process.env.PUBLIC_URL}/home-page.jpg`}
                 alt="Home page"
                 className="rounded-3xl shadow-2xl"
               />
