@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import os
@@ -172,6 +172,69 @@ async def get_registration_count():
         students_limit_reached=students_count >= MAX_REGISTRATIONS,
         volunteers_limit_reached=volunteers_count >= MAX_REGISTRATIONS
     )
+
+@api_router.post("/netlify/webhook")
+async def netlify_webhook(request: Request):
+    """Endpoint for Netlify form submission webhooks.
+
+    Netlify should POST the submission to this endpoint. If a shared secret is
+    configured, include header `X-Webhook-Token` with the same value as
+    `NETLIFY_WEBHOOK_SECRET` in `backend/.env` or your environment. If no secret
+    is configured, the endpoint will accept webhooks without token verification
+    (useful when you prefer not to manage a secret). The endpoint increments the
+    student/volunteer counts so the site shows updates even if submissions come
+    via Netlify forms directly.
+    """
+    token = request.headers.get("X-Webhook-Token")
+    secret = (os.environ.get('NETLIFY_WEBHOOK_SECRET') or '').strip()
+    if secret:
+        # When a secret is configured, require it to match the incoming header
+        if token != secret:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+    else:
+        # No secret configured — accept webhooks without authentication but log a warning
+        logging.warning('NETLIFY_WEBHOOK_SECRET not set; accepting webhooks without token verification')
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    # Netlify payload can vary; check common keys
+    form_name = payload.get('form_name') or payload.get('form-name') or payload.get('formName') or payload.get('form')
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    logging.info('Netlify webhook received: form=%s', form_name)
+
+    if form_name == 'student-registration':
+        # payload may contain a `data` or `fields` mapping depending on Netlify configuration
+        data = payload.get('data') or payload.get('fields') or {}
+        add_to_excel(STUDENTS_FILE, [
+            'netlify',
+            data.get('name', 'Netlify Submission'),
+            data.get('age', ''),
+            data.get('school', ''),
+            data.get('email', ''),
+            data.get('phone', ''),
+            timestamp
+        ])
+        logging.info('Netlify webhook processed for student-registration')
+    elif form_name == 'volunteer-registration':
+        data = payload.get('data') or payload.get('fields') or {}
+        add_to_excel(VOLUNTEERS_FILE, [
+            'netlify',
+            data.get('name', 'Netlify Submission'),
+            data.get('email', ''),
+            data.get('phone', ''),
+            data.get('organization', ''),
+            timestamp
+        ])
+        logging.info('Netlify webhook processed for volunteer-registration')
+    else:
+        logging.info('Netlify webhook received for unknown form: %s', form_name)
+
+    return {"message": "ok"}
 
 @api_router.post("/students/register")
 async def register_student(student: StudentRegistration):
