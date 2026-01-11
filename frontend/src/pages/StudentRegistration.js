@@ -18,7 +18,7 @@ const StudentRegistration = () => {
   const [limitReached, setLimitReached] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    age_grade: '',
+    age: '',
     school: '',
     email: '',
     phone: '',
@@ -50,15 +50,31 @@ const StudentRegistration = () => {
       return;
     }
 
+    // Phone validation: only digits allowed and max 10 digits
+    const phoneDigits = (formData.phone || '').replace(/\D/g, '');
+    if (phoneDigits.length > 10) {
+      toast.error('Phone number must be at most 10 digits');
+      return;
+    }
+
     setLoading(true);
     try {
+      // Prepare payload with cleaned phone
+      const payload = { ...formData, phone: phoneDigits };
+
       // Submit to Netlify Forms (required for Netlify to collect submissions)
-      await submitToNetlify('student-registration', formData);
+      await submitToNetlify('student-registration', payload);
 
       // Try to forward to backend, but do not fail the user flow if it errors (Netlify already captured it)
       if (BACKEND_URL) {
         try {
-          await axios.post(`${BACKEND_URL}/api/students/register`, formData);
+          await axios.post(`${BACKEND_URL}/api/students/register`, payload);
+          // refresh counts once backend acknowledges
+          try {
+            await axios.get(`${BACKEND_URL}/api/registrations/count`);
+          } catch (e) {
+            // ignore count refresh errors
+          }
         } catch (backendErr) {
           console.error('Backend forwarding failed:', backendErr.response?.status, backendErr.response?.data || backendErr.message);
           // continue — user already submitted via Netlify
@@ -138,13 +154,13 @@ const StudentRegistration = () => {
             </div>
 
             <div>
-              <Label htmlFor="age_grade">Age/Grade *</Label>
+              <Label htmlFor="age">Age *</Label>
               <Input
-                id="age_grade"
-                name="age_grade"
-                data-testid="student-grade-input"
-                placeholder="e.g., Grade 7 or 13 years"
-                value={formData.age_grade}
+                id="age"
+                name="age"
+                data-testid="student-age-input"
+                placeholder="e.g., 13"
+                value={formData.age}
                 onChange={handleChange}
                 className="h-12 rounded-xl border-slate-200 focus:border-violet-500 focus:ring-violet-500/20 bg-slate-50 focus:bg-white transition-all"
                 required

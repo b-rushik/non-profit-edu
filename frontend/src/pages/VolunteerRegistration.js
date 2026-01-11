@@ -41,13 +41,24 @@ const VolunteerRegistration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Phone validation
+    const phoneDigits = (formData.phone || '').replace(/\D/g, '');
+    if (phoneDigits.length > 10) {
+      toast.error('Phone number must be at most 10 digits');
+      return;
+    }
+
     setLoading(true);
     try {
-      await submitToNetlify('volunteer-registration', formData);
+      const payload = { ...formData, phone: phoneDigits };
+      await submitToNetlify('volunteer-registration', payload);
 
       if (BACKEND_URL) {
         try {
-          await axios.post(`${BACKEND_URL}/api/volunteers/register`, formData);
+          await axios.post(`${BACKEND_URL}/api/volunteers/register`, payload);
+          try {
+            await axios.get(`${BACKEND_URL}/api/registrations/count`);
+          } catch (e) {}
         } catch (backendErr) {
           console.error('Backend forwarding failed:', backendErr.response?.status, backendErr.response?.data || backendErr.message);
           // continue — user already submitted via Netlify
