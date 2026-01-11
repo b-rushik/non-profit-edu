@@ -28,6 +28,13 @@ export async function submitToNetlify(formName, data) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   });
-  if (!res.ok) throw new Error('Netlify form submission failed');
+
+  // Read response body for better debugging and surface details on failure
+  const resText = await res.text().catch(() => '');
+  if (!res.ok) {
+    console.error('Netlify form submission failed', { status: res.status, body: resText });
+    throw new Error(`Netlify form submission failed (${res.status}): ${resText}`);
+  }
+
   return res;
 }
