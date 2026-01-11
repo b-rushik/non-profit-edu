@@ -42,7 +42,7 @@ const Footer = () => {
             </p>
             <div className="bg-white p-4 rounded-xl inline-block" data-testid="donation-qr-code">
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SupportNonProfit"
+                src="/donation-qr.png"
                 alt="Donation QR Code"
                 className="w-32 h-32"
               />
